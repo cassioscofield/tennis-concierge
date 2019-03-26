@@ -1,10 +1,8 @@
 {
   "ids": {
-    "Reserva": 2
+    "Reserva": 1
   },
   "models": {
-    "Reserva": {
-      "1": "{\"id\":1,\"tipo\":\"HARD\",\"status\":\"ativa\",\"inicioEm\":\"2019-03-26T02:00:00.000Z\",\"fimEm\":\"2019-03-26T03:00:00.000Z\",\"criadoEm\":\"2019-03-26T02:40:10.428Z\",\"valor\":30,\"duracao\":60}"
-    }
+    "Reserva": {}
   }
 }
