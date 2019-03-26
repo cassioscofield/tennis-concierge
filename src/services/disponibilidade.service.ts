@@ -8,8 +8,9 @@ import { Reserva } from '../models';
 import { ReservaRepository } from '../repositories';
 
 export interface DisponibilidadeServiceInterface {
-  validaDisponibilidade(reserva: Reserva): Promise<Boolean>;
+  validaDisponibilidade(reserva: Reserva): Promise<Reserva>;
   listaDisponibilidade(reserva: Reserva): Promise<Reserva[]>;
+  getDuracao(reserva: Reserva): any;
 }
 
 export class DisponibilidadeService implements DisponibilidadeServiceInterface {
@@ -19,15 +20,50 @@ export class DisponibilidadeService implements DisponibilidadeServiceInterface {
     public reservaRepository: ReservaRepository,
   ) { }
 
-  async listaDisponibilidade(reserva: Reserva): Promise<Reserva[]> {
-    let disponibilidades: Reserva[] = [];
-    if (await this.validaDisponibilidade(reserva)) {
-      disponibilidades.push(reserva);
-    }
-    return Promise.resolve(disponibilidades);
+  getDuracao(reserva: Reserva): any {
+    let duracaoEmMs = +(new Date(reserva.fimEm)) - +(new Date(reserva.inicioEm));
+    return parseInt('' + (duracaoEmMs / (1000 * 60)), 10);
   }
 
-  async validaDisponibilidade(reserva: Reserva): Promise<Boolean> {
+  deslocaUmaDuracao(reserva: Reserva, multiplicador: any) {
+    let novaReserva = Object.assign({}, reserva);
+    let offsetEmMs = reserva!.duracao * 60 * 1000 * parseInt(multiplicador, 10);
+    let inicioEmMs = new Date(reserva.inicioEm).getTime() + offsetEmMs;
+    let fimEmMs = new Date(reserva.fimEm).getTime() + offsetEmMs;
+    novaReserva.inicioEm = new Date(inicioEmMs).toISOString();
+    novaReserva.fimEm = new Date(fimEmMs).toISOString();
+    return novaReserva;
+  }
+
+  inverteTipo(reserva: Reserva) {
+    let novaReserva = Object.assign({}, reserva);
+    novaReserva.tipo = reserva.tipo === 'SAIBRO' ? 'HARD' : 'SAIBRO';
+    return novaReserva;
+  }
+
+  async listaDisponibilidade(reserva: Reserva): Promise<Reserva[]> {
+    let disponibilidades: Reserva[] = [];
+    reserva.duracao = this.getDuracao(reserva);
+    if (await this.validaDisponibilidade(reserva)) {
+      disponibilidades.push(reserva);
+      return Promise.resolve(disponibilidades);
+    }
+    return new Promise((resolve, reject) => {
+      let inverteTipo = this.validaDisponibilidade(this.inverteTipo(reserva));
+      let deslocadaPraFrente = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, 1));
+      let deslocadaPraTras = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, -1));
+      let deslocadaPraFrente2 = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, 2));
+      let deslocadaPraTras2 = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, -2));
+      Promise.all([inverteTipo, deslocadaPraFrente, deslocadaPraTras]).then(data => {
+        var filtered = data.filter(Boolean);
+        resolve(filtered);
+      }).catch(err => {
+        reject(err);
+      });
+    })
+  }
+
+  async validaDisponibilidade(reserva: Reserva): Promise<Reserva> {
     let reservas = await this.reservaRepository.find({
       where: {
         // Remove canceladas
@@ -56,9 +92,9 @@ export class DisponibilidadeService implements DisponibilidadeServiceInterface {
       }
     });;
     if (reservas.length > 0) {
-      throw new HttpErrors.UnprocessableEntity('Horário indisponível');
+      return null;
     }
-    return true;
+    return reserva;
   }
 
 }

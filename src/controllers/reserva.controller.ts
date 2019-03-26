@@ -33,17 +33,12 @@ export class ReservaController {
     if (new Date(reserva.inicioEm) >= new Date(reserva.fimEm)) {
       throw new HttpErrors.BadRequest('fimEm menor ou igual a inicioEm');
     }
-    if (this.getDuracao(reserva) < 60) {
+    if (this.disponibilidadeService.getDuracao(reserva) < 60) {
       throw new HttpErrors.BadRequest('duracao menor que uma hora');
     }
-    if (this.getDuracao(reserva) % 60) {
+    if (this.disponibilidadeService.getDuracao(reserva) % 60) {
       throw new HttpErrors.BadRequest('duracao não é multiplo de 60');
     }
-  }
-
-  getDuracao(reserva: Reserva) {
-    let duracaoEmMs = +(new Date(reserva.fimEm)) - +(new Date(reserva.inicioEm));
-    return parseInt('' + (duracaoEmMs / (1000 * 60)));
   }
 
   @post('/reservas', {
@@ -55,11 +50,13 @@ export class ReservaController {
     },
   })
   async create(@requestBody() reserva: Reserva): Promise<Reserva> {
-    reserva.duracao = this.getDuracao(reserva);
+    reserva.duracao = this.disponibilidadeService.getDuracao(reserva);
     reserva.valor = reserva.duracao * 0.5;
     this.validate(reserva);
-    await this.disponibilidadeService.validaDisponibilidade(reserva);
-    return await this.reservaRepository.create(reserva);
+    if (await this.disponibilidadeService.validaDisponibilidade(reserva)) {
+      return await this.reservaRepository.create(reserva);
+    }
+    throw new HttpErrors.UnprocessableEntity('Horário indisponível');
   }
 
   @get('/reservas', {
