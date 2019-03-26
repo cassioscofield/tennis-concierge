@@ -1,2 +1,2 @@
-export * from './ping.controller';
+export * from './disponibillidade.controller';
 export * from './reserva.controller';

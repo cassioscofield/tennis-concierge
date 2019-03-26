@@ -1,17 +1,12 @@
 import {
-  Count,
-  CountSchema,
   Filter,
   repository,
-  Where,
 } from '@loopback/repository';
 import {
   post,
   param,
   get,
   getFilterSchemaFor,
-  getWhereSchemaFor,
-  patch,
   put,
   del,
   requestBody,
@@ -19,12 +14,14 @@ import {
 } from '@loopback/rest';
 import { Reserva } from '../models';
 import { ReservaRepository } from '../repositories';
+import { DisponibilidadeService } from '../services';
 
 export class ReservaController {
   constructor(
-    @repository(ReservaRepository)
-    public reservaRepository: ReservaRepository,
+    @repository(ReservaRepository) public reservaRepository: ReservaRepository,
   ) { }
+
+  disponibilidadeService = new DisponibilidadeService(this.reservaRepository)
 
   validate(reserva: Reserva) {
     if (['SAIBRO', 'HARD'].indexOf(reserva.tipo) == -1) {
@@ -49,40 +46,6 @@ export class ReservaController {
     return parseInt('' + (duracaoEmMs / (1000 * 60)));
   }
 
-  async validateAvailability(reserva: Reserva) {
-    let reservas = await this.reservaRepository.find({
-      where: {
-        // Remove canceladas
-        status: { inq: ['ativa', 'paga'] },
-        // Remove quadras diferentes
-        tipo: reserva.tipo,
-        // Analisa tempo
-        or: [
-          // Caso em que os inicios coincidem
-          {
-            inicioEm: reserva.inicioEm,
-          },
-          // Caso em que os fins coincidem
-          {
-            fimEm: reserva.fimEm,
-          },
-          // Caso onde há sobreposição do inicio
-          {
-            inicioEm: { between: [reserva.inicioEm, reserva.fimEm] }
-          },
-          // Caso que há sobreposição do fim
-          {
-            fimEm: { between: [reserva.inicioEm, reserva.fimEm] }
-          },
-        ],
-      }
-    });;
-    if (reservas.length > 0) {
-      throw new HttpErrors.UnprocessableEntity('Horário indisponível');
-    }
-    return true;
-  }
-
   @post('/reservas', {
     responses: {
       '200': {
@@ -95,7 +58,7 @@ export class ReservaController {
     reserva.duracao = this.getDuracao(reserva);
     reserva.valor = reserva.duracao * 0.5;
     this.validate(reserva);
-    await this.validateAvailability(reserva);
+    await this.disponibilidadeService.validaDisponibilidade(reserva);
     return await this.reservaRepository.create(reserva);
   }
 
