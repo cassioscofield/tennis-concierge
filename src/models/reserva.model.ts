@@ -40,6 +40,22 @@ export class Reserva extends Entity {
   })
   criadoEm: string;
 
+  @property({
+    type: 'number'
+  })
+  valor?: number;
+
+  @property({
+    type: 'number'
+  })
+  duracao?: number;
+
+  @property({
+    type: 'date',
+    required: false,
+  })
+  canceladaEm: string;
+
   constructor(data?: Partial<Reserva>) {
     super(data);
   }
