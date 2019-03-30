@@ -1,0 +1,7 @@
+---
+applications:
+- name: tennis-concierge
+  buildpack: https://github.com/cloudfoundry/nodejs-buildpack
+  memory: 256M
+  disk: 512M
+  instances: 1
