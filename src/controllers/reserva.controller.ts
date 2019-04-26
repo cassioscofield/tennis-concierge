@@ -50,11 +50,14 @@ export class ReservaController {
     },
   })
   async create(@requestBody() reserva: Reserva): Promise<Reserva> {
+    console.info(`GET /reserva request`, reserva)
     reserva.duracao = this.disponibilidadeService.getDuracao(reserva);
     reserva.valor = reserva.duracao * 0.5;
     this.validate(reserva);
     if (await this.disponibilidadeService.validaDisponibilidade(reserva)) {
-      return await this.reservaRepository.create(reserva);
+      let response = await this.reservaRepository.create(reserva);
+      console.info(`GET /reserva response`, response)
+      return response;
     }
     throw new HttpErrors.UnprocessableEntity('Horário indisponível');
   }
@@ -74,7 +77,10 @@ export class ReservaController {
   async find(
     @param.query.object('filter', getFilterSchemaFor(Reserva)) filter?: Filter,
   ): Promise<Reserva[]> {
-    return await this.reservaRepository.find(filter);
+    console.info(`GET /reserva request`, filter)
+    let response = await this.reservaRepository.find(filter);
+    console.info(`GET /reserva response`, response)
+    return response;
   }
 
   @get('/reservas/{id}', {
@@ -86,7 +92,10 @@ export class ReservaController {
     },
   })
   async findById(@param.path.number('id') id: number): Promise<Reserva> {
-    return await this.reservaRepository.findById(id);
+    console.info(`GET /reserva/${id} request`)
+    let response = await this.reservaRepository.findById(id);
+    console.info(`GET /reserva/${id} response`, response);
+    return response;
   }
 
   @put('/reservas/{id}', {
@@ -99,9 +108,13 @@ export class ReservaController {
   async replaceById(
     @param.path.number('id') id: number,
     @requestBody() reserva: Reserva,
-  ): Promise<void> {
+  ): Promise<Reserva> {
+    console.info(`DELETE /reserva/${id} request`, reserva)
     this.validate(reserva);
     await this.reservaRepository.replaceById(id, reserva);
+    let responseBody = await this.reservaRepository.findById(id);
+    console.info(`PUT /reserva/${id} response`, responseBody)
+    return responseBody;
   }
 
   @del('/reservas/{id}', {
@@ -111,10 +124,14 @@ export class ReservaController {
       },
     },
   })
-  async deleteById(@param.path.number('id') id: number): Promise<void> {
+  async deleteById(@param.path.number('id') id: number): Promise<Reserva> {
+    console.info(`DELETE /reserva/${id} request`)
     let reserva = await this.reservaRepository.findById(id);
     reserva.status = 'cancelada';
     reserva.canceladaEm = new Date().toISOString();
     await this.reservaRepository.replaceById(id, reserva);
+    let responseBody = await this.reservaRepository.findById(id);
+    console.info(`DELETE /reserva/${id} response`, responseBody)
+    return responseBody;
   }
 }

@@ -1,10 +1,12 @@
 {
   "ids": {
-    "Reserva": 2
+    "Reserva": 6
   },
   "models": {
     "Reserva": {
-      "1": "{\"tipo\":\"SAIBRO\",\"status\":\"ativa\",\"inicioEm\":\"2019-03-26T11:00:00.000Z\",\"fimEm\":\"2019-03-26T12:00:00.000Z\",\"criadoEm\":\"2019-03-26T11:40:58.077Z\",\"valor\":30,\"duracao\":60,\"id\":1}"
+      "2": "{\"tipo\":\"SAIBRO\",\"status\":\"ativa\",\"inicioEm\":\"2019-03-26T18:00:00.000Z\",\"fimEm\":\"2019-03-26T20:00:00.000Z\",\"criadoEm\":\"2019-04-26T22:23:03.443Z\",\"valor\":60,\"duracao\":120,\"id\":2}",
+      "4": "{\"tipo\":\"SAIBRO\",\"status\":\"ativa\",\"inicioEm\":\"2019-03-16T19:00:00.000Z\",\"fimEm\":\"2019-03-16T21:00:00.000Z\",\"criadoEm\":\"2019-04-26T22:26:12.155Z\",\"valor\":60,\"duracao\":120,\"id\":4}",
+      "5": "{\"tipo\":\"HARD\",\"status\":\"ativa\",\"inicioEm\":\"2019-03-26T11:00:00.000Z\",\"fimEm\":\"2019-03-26T20:00:00.000Z\",\"criadoEm\":\"2019-04-26T22:26:12.155Z\",\"valor\":270,\"duracao\":540,\"id\":5}"
     }
   }
 }

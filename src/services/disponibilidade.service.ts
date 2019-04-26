@@ -54,7 +54,7 @@ export class DisponibilidadeService implements DisponibilidadeServiceInterface {
       let deslocadaPraTras = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, -1));
       let deslocadaPraFrente2 = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, 2));
       let deslocadaPraTras2 = this.validaDisponibilidade(this.deslocaUmaDuracao(reserva, -2));
-      Promise.all([inverteTipo, deslocadaPraFrente, deslocadaPraTras]).then(data => {
+      Promise.all([inverteTipo, deslocadaPraFrente, deslocadaPraTras, deslocadaPraFrente2, deslocadaPraTras2]).then(data => {
         var filtered = data.filter(Boolean);
         resolve(filtered);
       }).catch(err => {
@@ -87,6 +87,11 @@ export class DisponibilidadeService implements DisponibilidadeServiceInterface {
           // Caso que há sobreposição do fim
           {
             fimEm: { between: [reserva.inicioEm, reserva.fimEm] }
+          },
+          // Caso que há inclusao da nova data
+          {
+            inicioEm: { lte: reserva.inicioEm },
+            fimEm: { gte: reserva.fimEm },
           },
         ],
       }

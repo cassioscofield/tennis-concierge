@@ -26,6 +26,9 @@ export class DisponibilidadeController {
     },
   })
   async listaDisponibilidade(@requestBody() reserva: Reserva): Promise<Reserva[]> {
-    return await this.disponibilidadeService.listaDisponibilidade(reserva);
+    console.info(`POST /disponibilidade request`, reserva);
+    let response = await this.disponibilidadeService.listaDisponibilidade(reserva);
+    console.info(`POST /disponibilidade response`, response);
+    return response;
   }
 }
